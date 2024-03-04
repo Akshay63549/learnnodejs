@@ -1,9 +1,11 @@
 const express=require('express')
 const app = express();
 const users=require('./MOCK_DATA.json')
+const cors = require('cors');
 const port=5000;
 
-
+// Enable all CORS requests
+app.use(cors());
 app.get('/', (req, res) => {
     res.status(200).send("server are healthy");
 })
@@ -59,6 +61,7 @@ app.route("api/users/:id").get((req, res) => {
     const {id}=req.params
     res.status(200).send("user");
 })
+
 
 app.listen(port,()=>{
     console.log(`server running on ${port}`)
