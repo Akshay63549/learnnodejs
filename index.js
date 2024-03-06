@@ -1,9 +1,25 @@
+const cluster = require('node:cluster');
+const totalCPUs=require('os').availableParallelism();
+console.log(totalCPUs)
 const express=require('express')
-const app = express();
 const users=require('./MOCK_DATA.json')
 const cors = require('cors');
-const port=5000;
 
+
+if (cluster.isPrimary) {
+  console.log(`Primary ${process.pid} is running`);
+
+  // Fork workers.
+  for (let i = 0; i < totalCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+  });
+} else {
+  const app = express();
+  const port=5000;
 // Enable all CORS requests
 app.use(cors());
 app.get('/', (req, res) => {
@@ -26,43 +42,33 @@ app.get('/api/users', (req, res) => {
 app.post('/api/users', (req, res) => {
     res.status(200).send("user");
 })
-
-
-// big code
-// app.get('/api/users/:id', (req, res) => {
-//     const {id}=req.params
-//     const user= users.find(user => user.id === Number(id))
-//     res.status(200).send(user);
-// })
-
-// app.put('/api/users/:id', (req, res) => {
-//     const {id}=req.params
-//     res.status(200).send("user");
-// })
-
-// app.patch('/api/users/:id', (req, res) => {
-//     const {id}=req.params
-//     res.status(200).send("user");
-// })
-
-// app.delete('/api/users/:id', (req, res) => {
-//     const {id}=req.params
-//     res.status(200).send("user");
-// })
-//  short code 
-app.route("api/users/:id").get((req, res) => {
+app.get('/api/users/:id', (req, res) => {
     const {id}=req.params
     const user= users.find(user => user.id === Number(id))
     res.status(200).send(user);
-}).put((req, res) =>{}).patch((req, res) => {
+})
+
+app.put('/api/users/:id', (req, res) => {
     const {id}=req.params
     res.status(200).send("user");
-}).delete((req, res) => {
+})
+
+app.patch('/api/users/:id', (req, res) => {
+    const {id}=req.params
+    res.status(200).send("user");
+})
+
+app.delete('/api/users/:id', (req, res) => {
     const {id}=req.params
     res.status(200).send("user");
 })
 
 
 app.listen(port,()=>{
-    console.log(`server running on ${port}`)
+    console.log(`server running on ${port} with ${process.pid}`)
 })
+
+}
+
+
+
