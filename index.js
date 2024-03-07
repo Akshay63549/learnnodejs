@@ -36,6 +36,7 @@ app.get('/users', (req, res) => {
 })
 
 app.get('/api/users', (req, res) => {
+    console.log(`this api called on ${process.pid}`)
     res.status(200).send(users);
 })
 
